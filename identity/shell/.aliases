@@ -1,0 +1,43 @@
+# q1sh101 - aliases
+
+# --- safety ---
+alias cp='cp -i'
+alias mv='mv -i'
+alias ln='ln -i'
+alias chmod='chmod -v'
+alias chown='chown -v'
+alias mkdir='mkdir -pv'
+
+# --- navigation ---
+alias ..='cd ..'
+alias ...='cd ../..'
+alias open='xdg-open'
+
+# --- listing (lsd) ---
+alias l='lsd -l'
+alias la='lsd -la'
+alias lt='lsd --tree --depth 3'
+
+# --- system ---
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias df='df -h'
+alias du='du -sh'
+alias free='free -h'
+alias reload='exec zsh'
+
+# --- network ---
+alias wget='wget --no-hsts'
+alias myip='curl -4 -s ifconfig.co'
+alias ports='ss -tulnp'
+
+# --- tmux ---
+alias ta='tmux attach -t'
+alias tn='tmux new -s'
+alias tl='tmux list-sessions'
+alias tk='tmux kill-session -t'
+
+# --- security audits ---
+alias fw='sudo ufw status verbose'
+alias gh-tokens='xdg-open "https://github.com/settings/tokens"'
+alias tmpfs-check='findmnt -t tmpfs --output TARGET,SIZE,OPTIONS'

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# q1sh101 - pre-commit hook
+
+set -euo pipefail
+
+# --- secrets scan (gitleaks, fail-closed) ---
+if command -v gitleaks &>/dev/null; then
+  gitleaks git --pre-commit --no-banner || exit 1
+else
+  echo "  BLOCKED - gitleaks not installed"
+  [[ "${ALLOW_NO_GITLEAKS:-0}" == "1" ]] || exit 1
+fi
+
+# --- merge conflict markers ---
+CONFLICT=$(git diff --staged --name-only -z | xargs -0 -r grep -l '^<<<<<<< \|^=======$\|^>>>>>>> ' 2>/dev/null || true)
+if [[ -n "$CONFLICT" ]]; then
+  echo "  BLOCKED - conflict markers:"
+  echo "$CONFLICT" | sed 's/^/    /'
+  exit 1
+fi
+
+# --- large files (>1MB) ---
+while IFS= read -r -d '' file; do
+  [[ -f "$file" ]] || continue
+  SIZE=$(stat -c%s "$file" 2>/dev/null || echo 0)
+  if [[ "$SIZE" -gt 1048576 ]]; then
+    echo "  BLOCKED - $file ($(( SIZE / 1024 ))KB > 1MB)"
+    exit 1
+  fi
+done < <(git diff --staged --name-only -z)
+
+# --- dangerous patterns (backup net for what gitleaks might miss) ---
+PEM="-----BEGIN"
+DANGEROUS=$(git diff --staged -U0 | grep -E '^\+' | grep -vE '^\+\s*#' | grep -iE "($PEM .* PRIVATE KEY|AKIA[A-Z0-9]{16})" 2>/dev/null || true)
+if [[ -n "$DANGEROUS" ]]; then
+  echo "  BLOCKED - suspicious patterns:"
+  echo "$DANGEROUS" | head -5 | sed 's/^/    /'
+  exit 1
+fi

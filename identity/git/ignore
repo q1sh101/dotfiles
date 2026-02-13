@@ -1,0 +1,83 @@
+# q1sh101 - global gitignore
+
+# --- secrets / never ---
+.env
+.env.*
+.env.local
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+*.agekey
+sops-age-key.txt
+application_default_credentials.json
+
+# --- cloud / infrastructure ---
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+**/.terraform/*
+**/.tofu/*
+.terraformrc
+terraform.rc
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.kube/config
+kubeconfig*
+*.yaml.dec
+*.yml.dec
+secrets.*.yaml
+values-secret*
+.pulumi/
+docker-compose.override.yml
+gha-creds-*.json
+local.settings.json
+
+# --- linux ---
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+nohup.out
+
+# --- editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- build / cache ---
+node_modules/
+__pycache__/
+*.pyc
+.cache/
+dist/
+build/
+target/
+
+# --- databases ---
+*.sqlite
+
+# --- test coverage ---
+coverage/
+
+# --- chain / wallet data ---
+*.ldb
+*.sst
+wallet.db
+wallet.dat
+chain.ldb
+
+# --- package manager cache ---
+.yarn/
+.pnpm-store/
+.npm/
+
+# --- logs ---
+*.log

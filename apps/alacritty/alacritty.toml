@@ -1,0 +1,51 @@
+# q1sh101 - alacritty config
+
+# --- theme ---
+[general]
+import = ["~/.config/alacritty/themes/pixiefloss.toml"]
+
+# --- env ---
+[env]
+TERM = "xterm-256color"                # SSH/tmux compatibility - colors work everywhere
+
+# --- window ---
+[window]
+padding = { x = 8, y = 8 }
+opacity = 0.81                          # GNOME Mutter ignores this - works on Sway/Hyprland/X11
+dynamic_title = true
+
+# --- font ---
+[font]
+size = 13.0
+
+[font.normal]
+family = "DejaVu Sans Mono"
+style = "Book"
+
+[font.bold]
+style = "Bold"
+
+[font.italic]
+style = "Oblique"
+
+# --- selection ---
+[selection]
+save_to_clipboard = true
+
+# --- scrolling ---
+[scrolling]
+history = 50000
+
+# --- mouse bindings ---
+[[mouse.bindings]]
+mouse = "Right"
+action = "Paste"
+
+[[mouse.bindings]]
+mouse = "Middle"
+action = "PasteSelection"
+
+# --- cursor ---
+[cursor.style]
+shape = "Block"
+blinking = "On"

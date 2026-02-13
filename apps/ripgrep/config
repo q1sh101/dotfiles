@@ -1,0 +1,16 @@
+# q1sh101 - ripgrep config
+
+# lowercase = case-insensitive, any uppercase = exact
+--smart-case
+
+# search dotfiles too
+--hidden
+
+# skip .git/ (needed because --hidden exposes it)
+--glob=!.git
+
+# truncate lines longer than 200 chars
+--max-columns=200
+
+# show matched fragment on truncated lines
+--max-columns-preview

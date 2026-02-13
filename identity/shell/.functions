@@ -1,0 +1,93 @@
+# q1sh101 - functions
+
+# --- mkcd ---
+mkcd() { [[ -z "${1:-}" ]] && return 1; mkdir -p "$1" && cd "$1"; }
+
+# --- copy with progress ---
+cpv() {
+  rsync -a --no-i-r --info=progress2 "$@"
+}
+
+# --- processes by memory ---
+psa() {
+  ps -ewwo rss,pid,user,command --sort=-rss | awk '
+    NR==1 { printf "%-10s %-8s %-12s %s\n", "MEMORY", "PID", "USER", "COMMAND"; next }
+    { cmd=""; for(i=4;i<=NF;i++) cmd=cmd (i>4?" ":"") $i
+      printf "%-10.1f MB %-8s %-12s %s\n", $1/1024, $2, $3, cmd }
+  ' | head -21
+}
+
+# --- vault (RAM-only workspace, never touches disk) ---
+# note: close from the same pane/shell where you opened
+vault() {
+  local v="/dev/shm/vault-$(id -u)"
+  [[ -d /dev/shm && -w /dev/shm ]] || { echo "  error: /dev/shm unavailable" >&2; return 1; }
+  [[ ! -L "$v" ]] || { echo "  error: vault path is symlink" >&2; return 1; }
+  [[ ! -e "$v" || -d "$v" ]] || { echo "  error: vault path is not directory" >&2; return 1; }
+  mkdir -p -m 700 "$v" || { echo "  error: cannot create vault" >&2; return 1; }
+  ulimit -c 0                                          # no core dumps (persists after vault-close, by design)
+  nvim() { command nvim --cmd "set noswapfile noundofile nobackup" "$@"; }
+  cd "$v" || { echo "  error: cannot enter vault" >&2; return 1; }
+  echo "  vault open: $v"
+}
+
+vault-close() {
+  local v="/dev/shm/vault-$(id -u)"
+  [[ "$v" == /dev/shm/vault-* ]] || { echo "  error: unsafe vault path" >&2; return 1; }
+  [[ ! -L "$v" ]] || { echo "  error: vault path is symlink" >&2; return 1; }
+  [[ -d "$v" ]] || { echo "  no vault open"; return 0; }
+  local shred_fail=0
+  find "$v" -type f -exec shred -u {} \; 2>/dev/null || shred_fail=1
+  [[ $shred_fail -ne 0 ]] && echo "  warning: shred failed on some files" >&2
+  rm -rf -- "$v"
+  if [[ -d "$v" ]]; then
+    echo "  error: vault not fully removed - check permissions" >&2
+    return 1
+  fi
+  unset -f nvim 2>/dev/null
+  # wipe clipboard
+  if command -v wl-copy &>/dev/null; then
+    wl-copy --clear
+  elif command -v xclip &>/dev/null; then
+    echo -n | xclip -selection clipboard
+    echo -n | xclip -selection primary
+  else
+    echo "  warning: no clipboard tool found" >&2
+  fi
+  cd "$HOME"
+  echo "  vault destroyed"
+}
+
+# --- seal history (tools without env variable support) ---
+seal-history() {
+  local targets=(
+    ~/.gore/history
+    ~/.config/evcxr/history.txt
+    ~/.irb_history
+    ~/.lldb/lldb-history
+    ~/.msf4/history
+    ~/.hashcat/hashcat.potfile
+    ~/.john/john.pot
+    ~/.nxc/.nxc_history
+    ~/bettercap.history
+    ~/.bun/repl_history                        # bun: undocumented
+    ~/.local/share/recently-used.xbel          # GNOME: file open/download history
+  )
+  local errors=0
+  for f in "${targets[@]}"; do
+    mkdir -p "$(dirname "$f")"
+    [[ -d "$f" && ! -L "$f" ]] && rm -rf -- "$f"
+    rm -f -- "$f" 2>/dev/null || true
+    ln -sfn /dev/null "$f" || { echo "  error: cannot seal $f" >&2; errors=$((errors+1)); continue; }
+  done
+  [[ $errors -ne 0 ]] && { echo "  $errors file(s) failed to seal" >&2; return 1; }
+  # radare2
+  if command -v r2 &>/dev/null; then
+    local r2rc="$HOME/.radare2rc"
+    if ! grep -q 'scr.histsave' "$r2rc" 2>/dev/null; then
+      echo 'e scr.histsave = false' >> "$r2rc"
+    fi
+  fi
+
+  echo "  sealed - all history files -> /dev/null"
+}

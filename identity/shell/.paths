@@ -1,0 +1,51 @@
+# q1sh101 - paths
+
+# --- user ---
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.bin:$PATH"
+
+# --- languages ---
+_lazy() {
+  local setup="$1"; shift
+  local cmds="$*"
+  for cmd in "$@"; do
+    eval "${cmd}() { unset -f ${cmds}; ${setup}; ${cmd} \"\$@\"; }"
+  done
+}
+
+# rust
+export PATH="$HOME/.cargo/bin:$PATH"
+
+# go
+export PATH="/usr/local/go/bin:$PATH"
+export PATH="$HOME/go/bin:$PATH"
+
+# node
+export NVM_DIR="$HOME/.nvm"
+_lazy '[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"' nvm node npm npx
+
+# deno
+export PATH="$HOME/.deno/bin:$PATH"
+
+# bun
+export PATH="$HOME/.bun/bin:$PATH"
+
+# ruby
+export PATH="$HOME/.rbenv/bin:$PATH"
+_lazy 'command -v rbenv &>/dev/null && eval "$(rbenv init - zsh)"' rbenv ruby gem bundle irb
+
+# lua
+export PATH="$HOME/.luarocks/bin:$PATH"
+
+# python
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+_lazy 'command -v pyenv &>/dev/null && eval "$(pyenv init - zsh)"' pyenv python python3 pip pip3
+
+unset -f _lazy
+
+# --- tools ---
+# nvim (works for any arch: x86_64, arm64, etc.)
+for d in /opt/nvim-linux-*/bin(N); do
+  export PATH="$d:$PATH" && break
+done
