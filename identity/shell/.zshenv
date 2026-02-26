@@ -8,6 +8,9 @@ typeset -U PATH path                   # prevent duplicates in nested shells / t
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
+# --- dotfiles ---
+export DOTFILES="$HOME/dotfiles"
+
 # --- xdg base directories ---
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
@@ -18,7 +21,6 @@ export XDG_CACHE_HOME="$HOME/.cache"
 export EDITOR="nvim"
 export VISUAL="nvim"
 export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgrep/config"
-export DELTA_PAGER="less -FRX"
 
 # --- security ---
 umask 077                              # new files: owner-only
@@ -41,3 +43,5 @@ export PSQL_HISTORY="/dev/null"
 export REDISCLI_HISTFILE="/dev/null"
 export GDBHISTFILE=""
 export R2_HISTORY="/dev/null"
+export ZSH_COMPDUMP="/dev/null"                        # no .zcompdump on disk
+export NVIM_LOG_FILE="/dev/null"

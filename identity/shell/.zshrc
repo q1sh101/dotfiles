@@ -14,6 +14,9 @@ setopt NO_CLOBBER                              # prevent > overwrite (use >| to 
 ulimit -n 2048
 
 # --- keybindings ---
+# Ctrl+s is tmux prefix; disable terminal flow-control freeze (XON/XOFF).
+[[ -t 0 ]] && stty -ixon 2>/dev/null || true
+
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
@@ -21,17 +24,20 @@ bindkey "^k" up-line-or-beginning-search
 bindkey "^j" down-line-or-beginning-search
 
 # --- completion ---
-autoload -Uz compinit && compinit
+autoload -Uz compinit && compinit -d "$ZSH_COMPDUMP"
 zstyle ':completion:*' menu select
 
 # --- prompt ---
 autoload -Uz vcs_info
-precmd() { vcs_info; export GPG_TTY=$(tty) }  # GPG_TTY survives tmux reattach
+precmd() {
+  vcs_info
+  export GPG_TTY=$(tty)                            # GPG_TTY survives tmux reattach
+  print -Pn "\e]0;A T O M X\a"
+  _git_rprompt                                     # RPROMPT: branch + status (in .functions)
+}
 zstyle ':vcs_info:git:*' formats '%b'
-setopt PROMPT_SUBST
 
-PROMPT='%F{blue}%~%f %F{yellow}${vcs_info_msg_0_}%f
-%F{green}$%f '
+PROMPT='%B%F{cyan}%1~%f %(?.%F{green}.%F{red})$❱%f%b '
 
 # --- source ---
 [ -f "$HOME/.paths" ]     && source "$HOME/.paths"

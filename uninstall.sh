@@ -4,21 +4,21 @@
 
 set -euo pipefail
 
-DOTFILES="$(cd "$(dirname "$0")" && pwd)"
+_dotfiles="$(cd "$(dirname "$0")" && pwd)"
 
 removed=0
 
 unlink() {
   local dst="$1"
   # only remove if it's a symlink pointing into our repo
-  if [[ -L "$dst" ]] && [[ "$(readlink -- "$dst")" == "$DOTFILES" || "$(readlink -- "$dst")" == "$DOTFILES/"* ]]; then
+  if [[ -L "$dst" ]] && [[ "$(readlink -- "$dst")" == "$_dotfiles" || "$(readlink -- "$dst")" == "$_dotfiles/"* ]]; then
     rm -f -- "$dst" || { echo "  error: remove failed for $dst" >&2; return 1; }
     echo "  $dst"
     removed=$((removed+1))
   fi
 }
 
-echo "uninstall: $DOTFILES"
+echo "uninstall: $_dotfiles"
 echo ""
 
 # --- root ---
@@ -45,16 +45,18 @@ unlink "$HOME/.ssh/config"
 
 # --- identity/tmux ---
 unlink "$HOME/.tmux.conf"
+unlink "$HOME/.local/bin/git-status"
 
 # --- apps/alacritty ---
 unlink "$HOME/.config/alacritty/alacritty.toml"
-unlink "$HOME/.config/alacritty/themes/pixiefloss.toml"
 
 # --- apps/ranger ---
 unlink "$HOME/.config/ranger/rc.conf"
 
 # --- apps/ripgrep ---
 unlink "$HOME/.config/ripgrep/config"
+
+rm -f "$HOME/.zcompdump"*
 
 echo ""
 echo "done. removed $removed symlinks."

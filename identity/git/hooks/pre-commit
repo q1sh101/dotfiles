@@ -12,28 +12,36 @@ else
 fi
 
 # --- merge conflict markers ---
-CONFLICT=$(git diff --staged --name-only -z | xargs -0 -r grep -l '^<<<<<<< \|^=======$\|^>>>>>>> ' 2>/dev/null || true)
-if [[ -n "$CONFLICT" ]]; then
+_conflict="$(
+  git diff --staged --name-only -z |
+    while IFS= read -r -d '' file; do
+      git cat-file -e ":$file" 2>/dev/null || continue
+      if git show ":$file" 2>/dev/null | grep -qE '^(<<<<<<< |=======|>>>>>>> )'; then
+        printf '%s\n' "$file"
+      fi
+    done
+)"
+if [[ -n "$_conflict" ]]; then
   echo "  BLOCKED - conflict markers:"
-  echo "$CONFLICT" | sed 's/^/    /'
+  echo "$_conflict" | sed 's/^/    /'
   exit 1
 fi
 
 # --- large files (>1MB) ---
 while IFS= read -r -d '' file; do
   [[ -f "$file" ]] || continue
-  SIZE=$(stat -c%s "$file" 2>/dev/null || echo 0)
-  if [[ "$SIZE" -gt 1048576 ]]; then
-    echo "  BLOCKED - $file ($(( SIZE / 1024 ))KB > 1MB)"
+  _size=$(stat -c%s "$file" 2>/dev/null || echo 0)
+  if [[ "$_size" -gt 1048576 ]]; then
+    echo "  BLOCKED - $file ($(( _size / 1024 ))KB > 1MB)"
     exit 1
   fi
 done < <(git diff --staged --name-only -z)
 
 # --- dangerous patterns (backup net for what gitleaks might miss) ---
-PEM="-----BEGIN"
-DANGEROUS=$(git diff --staged -U0 | grep -E '^\+' | grep -vE '^\+\s*#' | grep -iE "($PEM .* PRIVATE KEY|AKIA[A-Z0-9]{16})" 2>/dev/null || true)
-if [[ -n "$DANGEROUS" ]]; then
+_pem="-----BEGIN"
+_dangerous=$(git diff --staged -U0 | grep -E '^\+' | grep -vE '^\+\s*#' | grep -iE "($_pem .* PRIVATE KEY|AKIA[A-Z0-9]{16})" 2>/dev/null || true)
+if [[ -n "$_dangerous" ]]; then
   echo "  BLOCKED - suspicious patterns:"
-  echo "$DANGEROUS" | head -5 | sed 's/^/    /'
+  echo "$_dangerous" | head -5 | sed 's/^/    /'
   exit 1
 fi

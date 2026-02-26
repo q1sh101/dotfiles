@@ -1,0 +1,59 @@
+#!/bin/sh
+# q1sh101 - git status for prompt and tmux status bar
+# usage: git-status <path> <format> [nerd]
+# format: tmux | zsh
+# nerd: 1 (icon) | 0 (ascii)
+
+cd "${1:-.}" 2>/dev/null || exit 0
+branch=$(git branch --show-current 2>/dev/null) || exit 0
+[ -z "$branch" ] && exit 0
+
+format="${2:-tmux}"
+nerd="${3:-0}"
+
+# --- status indicators (like starship order: = $ ✘ » ! + ? ⇡ ⇣ ⇕) ---
+gs=$(timeout 1s git status --porcelain 2>/dev/null) || exit 0
+ind=""
+
+if [ -n "$gs" ]; then
+  echo "$gs" | grep -qE '^(U.|.U|AA|DD)' && ind="${ind}="
+fi
+git stash list 2>/dev/null | grep -q .    && ind="${ind}\$"
+if [ -n "$gs" ]; then
+  echo "$gs" | grep -q '^D'              && ind="${ind}✘"
+  echo "$gs" | grep -q '^R'              && ind="${ind}»"
+  echo "$gs" | grep -q '^.[MD]'          && ind="${ind}!"
+  echo "$gs" | grep -q '^[AMTRC]'        && ind="${ind}+"
+  echo "$gs" | grep -q '^?'              && ind="${ind}?"
+fi
+
+ab=$(git rev-list --count --left-right '@{upstream}...HEAD' 2>/dev/null)
+if [ -n "$ab" ]; then
+  behind=$(printf '%s' "$ab" | cut -f1)
+  ahead=$(printf '%s' "$ab" | cut -f2)
+  if [ "$ahead" -gt 0 ] 2>/dev/null && [ "$behind" -gt 0 ] 2>/dev/null; then
+    ind="${ind}⇕"
+  elif [ "$ahead" -gt 0 ] 2>/dev/null; then
+    ind="${ind}⇡"
+  elif [ "$behind" -gt 0 ] 2>/dev/null; then
+    ind="${ind}⇣"
+  fi
+fi
+
+# --- output ---
+case "$format" in
+  tmux)
+    [ "$nerd" = "1" ] && icon=" " || icon="git:"
+    if [ -n "$ind" ]; then
+      printf '%s' " #[fg=green,bold]${icon}#[fg=green,bold]${branch} #[fg=red,bold][${ind}]#[nobold]"
+    else
+      printf '%s' " #[fg=green,bold]${icon}#[fg=green,bold]${branch}"
+    fi
+    ;;
+  zsh)
+    [ "$nerd" = "1" ] && icon=" " || icon=""
+    out="%B%F{green}${icon}%f%F{green}${branch}%f%b"
+    [ -n "$ind" ] && out="${out} %B%F{red}[${ind}]%f%b"
+    printf '%s' "$out"
+    ;;
+esac

@@ -32,6 +32,7 @@ alias myip='curl -4 -s ifconfig.co'
 alias ports='ss -tulnp'
 
 # --- tmux ---
+alias atomx='tmux new -A -s q1sh'
 alias ta='tmux attach -t'
 alias tn='tmux new -s'
 alias tl='tmux list-sessions'

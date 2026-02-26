@@ -1,8 +1,8 @@
 # q1sh101 - alacritty config
 
-# --- theme ---
 [general]
-import = ["~/.config/alacritty/themes/pixiefloss.toml"]
+live_config_reload = true
+import = ["~/.dotfiles/apps/alacritty/colours.gen.toml"]
 
 # --- env ---
 [env]
@@ -10,23 +10,22 @@ TERM = "xterm-256color"                # SSH/tmux compatibility - colors work ev
 
 # --- window ---
 [window]
-padding = { x = 8, y = 8 }
-opacity = 0.81                          # GNOME Mutter ignores this - works on Sway/Hyprland/X11
+padding = { x = 10, y = 8 }
+startup_mode = "Maximized"
+opacity = 0.88                          # GNOME Mutter ignores this - works on Sway/Hyprland/X11
 dynamic_title = true
 
 # --- font ---
 [font]
-size = 13.0
+size = 13
 
 [font.normal]
 family = "DejaVu Sans Mono"
 style = "Book"
 
 [font.bold]
+family = "DejaVu Sans Mono"
 style = "Bold"
-
-[font.italic]
-style = "Oblique"
 
 # --- selection ---
 [selection]
@@ -45,7 +44,22 @@ action = "Paste"
 mouse = "Middle"
 action = "PasteSelection"
 
+# --- hints (clickable URLs) ---
+[hints]
+alphabet = "jfkdlsahgurieowpq"
+
+[[hints.enabled]]
+regex = "(mailto:|ssh://|https?://|ftp://|file://|www\\.)[\\w\\-@:%.+~#=/?&,;!()]*[\\w\\-@%+~#=/)]"
+hyperlinks = true
+command = { program = "xdg-open", args = [] }
+post_processing = true
+binding = { key = "O", mods = "Control|Shift" }
+
+[hints.enabled.mouse]
+enabled = true
+mods = "Control"
+
 # --- cursor ---
 [cursor.style]
 shape = "Block"
-blinking = "On"
+blinking = "Off"

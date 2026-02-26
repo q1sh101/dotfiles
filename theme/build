@@ -1,0 +1,64 @@
+#!/bin/sh
+set -e
+
+theme="$(cd "$(dirname "$0")" && pwd)"
+root="$(cd "$theme/.." && pwd)"
+
+. "$theme/colours.conf"
+
+cat > "$root/identity/tmux/colours.gen.conf" << EOF
+set -g @primary0 "$primary0"
+set -g @primary1 "$primary1"
+set -g @primary2 "$primary2"
+set -g @primary3 "$primary3"
+set -g @primary4 "$primary4"
+set -g @primary5 "$primary5"
+set -g @primary6 "$primary6"
+set -g @primary7 "$primary7"
+set -g @primary8 "$primary8"
+set -g @primary9 "$primary9"
+EOF
+
+cat > "$root/apps/alacritty/colours.gen.toml" << EOF
+[colors.primary]
+background = "$primary0"
+foreground = "$primary3"
+
+[colors.cursor]
+cursor = "$primary6"
+text   = "$primary0"
+
+[colors.selection]
+background = "$primary6"
+text       = "$primary0"
+
+[colors.hints.start]
+foreground = "$primary0"
+background = "$primary4"
+
+[colors.hints.end]
+foreground = "$primary0"
+background = "$primary4"
+
+[colors.normal]
+black   = "$primary0"
+red     = "$primary5"
+green   = "$primary7"
+yellow  = "$primary6"
+blue    = "$primary4"
+magenta = "$primary9"
+cyan    = "$primary8"
+white   = "$primary3"
+
+[colors.bright]
+black   = "$primary2"
+red     = "$primary5"
+green   = "$primary7"
+yellow  = "$primary6"
+blue    = "$primary4"
+magenta = "$primary9"
+cyan    = "$primary8"
+white   = "$primary3"
+EOF
+
+echo "colours.conf -> colours.gen.conf + colours.gen.toml"

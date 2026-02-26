@@ -12,7 +12,6 @@
 
 [core]
   excludesfile = ~/.config/git/ignore
-  pager = delta
   hooksPath = ~/.config/git/hooks
 
 [branch]
@@ -37,7 +36,7 @@
   autoSquash = true                   # auto-apply fixup!/squash! commits
 
 [rerere]
-  enabled = true                      # remember resolved conflicts
+  enabled = true                      # remember resolved conflicts (writes .git/rr-cache/ per repo)
 
 # --- integrity ---
 [transfer]
@@ -60,27 +59,11 @@
   gpgsign = true                      # every tag is signed
   sort = version:refname              # v2 > v10 (not alphabetical)
 
-# --- credential ---
-[credential "https://github.com"]
-  helper =
-  helper = !gh auth git-credential
-
-# --- delta (diff pager) ---
-[delta]
-  navigate = true                     # n/N to jump between sections
-  line-numbers = true
-  side-by-side = false
-  syntax-theme = Dracula
-
-[interactive]
-  diffFilter = delta --color-only
-
 # --- aliases ---
 [alias]
   s = status -sb
   l = log --oneline -20
   d = diff
   ds = diff --staged
-  dlog = -c diff.external=difft log -p --ext-diff
   undo = reset HEAD~1 --mixed         # undo last commit, keep changes
   amend = commit --amend --no-edit    # add staged to last commit

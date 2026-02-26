@@ -1,5 +1,13 @@
 # q1sh101 - functions
 
+# --- git prompt (used by precmd in .zshrc, delegates to git-status) ---
+_git_rprompt() {
+  [[ -z "$TMUX" && -n "$vcs_info_msg_0_" ]] || { RPROMPT=""; return; }
+  local nerd=0
+  command -v fc-list >/dev/null 2>&1 && fc-list : family | grep -qi "nerd" && nerd=1
+  RPROMPT=$("$DOTFILES/identity/shell/git-status" . zsh "$nerd")
+}
+
 # --- mkcd ---
 mkcd() { [[ -z "${1:-}" ]] && return 1; mkdir -p "$1" && cd "$1"; }
 

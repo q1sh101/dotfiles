@@ -8,6 +8,7 @@ zero trust, zero trace.
 dotfiles/
 ├── identity/          # $ whoami      (shell, git, gpg, ssh, tmux)
 ├── apps/              # $ which       (alacritty, ranger, ripgrep)
+├── theme/             # color source + generator
 ├── setup.sh           # $ ./setup.sh
 └── uninstall.sh       # $ ./uninstall.sh
 ```
@@ -25,6 +26,12 @@ exec zsh
 ```bash
 cd ~/dotfiles && ./uninstall.sh
 ```
+
+## features
+
+- custom tmux status bar
+- unified `git-status` - branch + visual states for tmux and zsh prompt
+- single theme source - `theme/colours.conf` -> `./theme/build` -> generates tmux and alacritty configs
 
 ## dependencies
 
@@ -48,20 +55,18 @@ chsh -s $(which zsh)
 
 ```bash
 # debian/ubuntu
-sudo apt install tmux fzf ripgrep xclip wl-clipboard rsync ranger curl wget xdg-utils zoxide lsd alacritty
+sudo apt install tmux fzf ripgrep xclip wl-clipboard rsync ranger curl wget xdg-utils zoxide lsd fontconfig alacritty
 
 # arch
-sudo pacman -S tmux fzf ripgrep xclip wl-clipboard rsync ranger curl wget xdg-utils zoxide lsd alacritty
+sudo pacman -S tmux fzf ripgrep xclip wl-clipboard rsync ranger curl wget xdg-utils zoxide lsd fontconfig alacritty
 
 # fedora
-sudo dnf install tmux fzf ripgrep xclip wl-clipboard rsync ranger curl wget xdg-utils zoxide lsd alacritty
+sudo dnf install tmux fzf ripgrep xclip wl-clipboard rsync ranger curl wget xdg-utils zoxide lsd fontconfig alacritty
 
 # from github/web
-nvim          # https://github.com/neovim/neovim
-delta         # https://github.com/dandavison/delta
+nvim          # https://github.com/neovim/neovim (config: separate repo)
 gh            # https://github.com/cli/cli
 gitleaks      # https://github.com/gitleaks/gitleaks
-difftastic    # https://github.com/Wilfred/difftastic
 ```
 
 ### languages
