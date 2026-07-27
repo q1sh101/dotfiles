@@ -27,7 +27,7 @@ alias free='free -h'
 alias reload='exec zsh'
 
 # --- network ---
-alias wget='wget --no-hsts'
+alias wget='wget --hsts-file="${XDG_RUNTIME_DIR:-/tmp}/wget-hsts"'   # HSTS on, db on tmpfs
 alias myip='curl -4 -s ifconfig.co'
 alias ports='ss -tulnp'
 

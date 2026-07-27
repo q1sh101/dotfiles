@@ -12,6 +12,7 @@ setopt NO_CLOBBER                              # prevent > overwrite (use >| to 
 
 # --- system ---
 ulimit -n 2048
+ulimit -c 0                                    # no core dumps to disk
 
 # --- keybindings ---
 # Ctrl+s is tmux prefix; disable terminal flow-control freeze (XON/XOFF).

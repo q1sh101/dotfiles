@@ -34,7 +34,8 @@ vault() {
   [[ ! -e "$v" || -d "$v" ]] || { echo "  error: vault path is not directory" >&2; return 1; }
   mkdir -p -m 700 "$v" || { echo "  error: cannot create vault" >&2; return 1; }
   ulimit -c 0                                          # no core dumps (persists after vault-close, by design)
-  nvim() { command nvim --cmd "set noswapfile noundofile nobackup" "$@"; }
+  # -i NONE: no shada (yanked registers/marks would hit disk)
+  nvim() { command nvim -i NONE --cmd "set noswapfile noundofile nobackup" "$@"; }
   cd "$v" || { echo "  error: cannot enter vault" >&2; return 1; }
   echo "  vault open: $v"
 }
@@ -44,8 +45,9 @@ vault-close() {
   [[ "$v" == /dev/shm/vault-* ]] || { echo "  error: unsafe vault path" >&2; return 1; }
   [[ ! -L "$v" ]] || { echo "  error: vault path is symlink" >&2; return 1; }
   [[ -d "$v" ]] || { echo "  no vault open"; return 0; }
+  # {} + propagates shred failures ( \; drops them)
   local shred_fail=0
-  find "$v" -type f -exec shred -u {} \; 2>/dev/null || shred_fail=1
+  find "$v" -type f -exec shred -u -- {} + 2>/dev/null || shred_fail=1
   [[ $shred_fail -ne 0 ]] && echo "  warning: shred failed on some files" >&2
   rm -rf -- "$v"
   if [[ -d "$v" ]]; then

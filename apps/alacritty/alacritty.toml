@@ -12,7 +12,7 @@ TERM = "xterm-256color"                # SSH/tmux compatibility - colors work ev
 [window]
 padding = { x = 10, y = 8 }
 startup_mode = "Maximized"
-opacity = 0.88                          # GNOME Mutter ignores this - works on Sway/Hyprland/X11
+opacity = 0.95                          # GNOME Mutter ignores this - works on Sway/Hyprland/X11
 dynamic_title = true
 
 # --- font ---
@@ -20,11 +20,11 @@ dynamic_title = true
 size = 13
 
 [font.normal]
-family = "DejaVu Sans Mono"
-style = "Book"
+family = "DejaVuSansM Nerd Font Mono"
+style = "Regular"
 
 [font.bold]
-family = "DejaVu Sans Mono"
+family = "DejaVuSansM Nerd Font Mono"
 style = "Bold"
 
 # --- selection ---
@@ -63,3 +63,8 @@ mods = "Control"
 [cursor.style]
 shape = "Block"
 blinking = "Off"
+
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\u001B\r"

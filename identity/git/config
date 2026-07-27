@@ -14,6 +14,14 @@
   excludesfile = ~/.config/git/ignore
   hooksPath = ~/.config/git/hooks
 
+# --- transport (force ssh, enforced at config level) ---
+[url "git@github.com:"]
+  insteadOf = https://github.com/
+  insteadOf = git://github.com/
+
+[url "git@gitlab.com:"]
+  insteadOf = https://gitlab.com/
+
 [branch]
   sort = -committerdate               # recent branches first
 

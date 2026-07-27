@@ -41,7 +41,13 @@ done < <(git diff --staged --name-only -z)
 _pem="-----BEGIN"
 _dangerous=$(git diff --staged -U0 | grep -E '^\+' | grep -vE '^\+\s*#' | grep -iE "($_pem .* PRIVATE KEY|AKIA[A-Z0-9]{16})" 2>/dev/null || true)
 if [[ -n "$_dangerous" ]]; then
-  echo "  BLOCKED - suspicious patterns:"
-  echo "$_dangerous" | head -5 | sed 's/^/    /'
+  # count only - echoing the match would leak the secret
+  echo "  BLOCKED - $(echo "$_dangerous" | wc -l) suspicious line(s), see: git diff --staged"
   exit 1
 fi
+
+# --- repo-local hook ---
+# hooksPath replaces Git default lookup; run project hook too
+_repo_hook="$(git rev-parse --git-dir)/hooks/pre-commit"
+[[ -x "$_repo_hook" ]] && exec "$_repo_hook" "$@"
+exit 0
