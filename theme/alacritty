@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script="$(readlink -f -- "$0")"
+theme="$(cd -- "$(dirname -- "$script")" && pwd)"
+root="$(cd -- "$theme/.." && pwd)"
+cache="$HOME/.cache/dotfiles"
+alacritty_overlay="$cache/alacritty-host.toml"
+tmux_overlay="$cache/tmux-host.conf"
+alacritty_config="$root/apps/alacritty/alacritty.toml"
+unit="alacritty-theme-sync.service"
+unit_source="$theme/$unit"
+unit_path="$HOME/.config/systemd/user/$unit"
+
+fail() {
+  printf 'theme: %s\n' "$*" >&2
+  exit 1
+}
+
+need() {
+  local command
+  for command in "$@"; do
+    command -v "$command" >/dev/null 2>&1 || fail "missing $command"
+  done
+}
+
+warn() {
+  printf 'theme: warning: %s\n' "$*" >&2
+}
+
+reload_consumers() {
+  touch -- "$alacritty_config"
+  if command -v tmux >/dev/null 2>&1 &&
+     [[ -e "$HOME/.tmux.conf" ]] &&
+     tmux list-sessions >/dev/null 2>&1; then
+    tmux source-file "$HOME/.tmux.conf" >/dev/null 2>&1 ||
+      warn "tmux reload failed; the next session will use the new theme"
+  fi
+}
+
+setting() {
+  local value
+  value="$(gsettings get "$@")" || fail "cannot read GNOME setting: $*"
+  value="${value#\'}"
+  value="${value%\'}"
+  printf '%s\n' "$value"
+}
+
+ptyxis_variant() {
+  local style
+  style="$(setting org.gnome.Ptyxis interface-style)"
+  if [[ "$style" == "system" ]]; then
+    style="$(setting org.gnome.desktop.interface color-scheme)"
+  fi
+  case "$style" in
+    *dark*) printf '%s\n' Dark ;;
+    *)     printf '%s\n' Light ;;
+  esac
+}
+
+sync_ptyxis() (
+  need gsettings gresource ptyxis
+
+  local profile palette section workspace source alacritty_output tmux_output
+  profile="$(setting org.gnome.Ptyxis default-profile-uuid)"
+  [[ -n "$profile" ]] || fail "no Ptyxis profile"
+  palette="$(setting "org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/$profile/" palette)"
+  [[ -n "$palette" ]] || fail "no Ptyxis palette"
+
+  mkdir -p -- "$cache"
+  workspace="$(mktemp -d "$cache/.alacritty-theme.XXXXXX")"
+  trap 'rm -rf -- "$workspace"' EXIT
+  source="$workspace/ptyxis.palette"
+  alacritty_output="$workspace/alacritty-host.toml"
+  tmux_output="$workspace/tmux-host.conf"
+
+  gresource extract "$(command -v ptyxis)" \
+    "/org/gnome/Ptyxis/palettes/$palette.palette" > "$source" || {
+      fail "Ptyxis palette '$palette' is unavailable"
+    }
+
+  section="$(ptyxis_variant)"
+  grep -Fqx "[$section]" "$source" || section=Palette
+
+  awk -v wanted="$section" -v tmux="$tmux_output" \
+    -f "$theme/ptyxis.awk" "$source" > "$alacritty_output"
+
+  [[ -s "$alacritty_output" && -s "$tmux_output" ]] ||
+    fail "palette conversion produced incomplete output"
+
+  mv -f -- "$alacritty_output" "$alacritty_overlay"
+  mv -f -- "$tmux_output" "$tmux_overlay"
+  reload_consumers
+)
+
+watch_ptyxis() {
+  need dconf
+  sync_ptyxis
+  dconf watch /org/gnome/ | while IFS= read -r event; do
+    case "$event" in
+      */Ptyxis/default-profile-uuid|*/Ptyxis/interface-style|*/Ptyxis/Profiles/*/palette|*/desktop/interface/color-scheme)
+        sync_ptyxis
+        ;;
+    esac
+  done
+  fail "Ptyxis settings watcher stopped"
+}
+
+unit_owned() {
+  [[ -L "$unit_path" ]] &&
+    [[ "$(readlink -f -- "$unit_path" 2>/dev/null)" == "$unit_source" ]]
+}
+
+stop_unit() {
+  if [[ -e "$unit_path" || -L "$unit_path" ]]; then
+    unit_owned || fail "$unit_path belongs elsewhere"
+  else
+    return 0
+  fi
+  need systemctl
+  systemctl --user disable --now "$unit" >/dev/null 2>&1 ||
+    fail "could not stop $unit"
+  if systemctl --user is-active --quiet "$unit" ||
+     systemctl --user is-enabled --quiet "$unit"; then
+    fail "could not stop $unit"
+  fi
+}
+
+ensure_unit() {
+  local target
+  if [[ -L "$unit_path" ]]; then
+    target="$(readlink -f -- "$unit_path")" || fail "$unit_path is a broken symlink"
+    [[ "$target" == "$unit_source" ]] || fail "$unit_path belongs elsewhere"
+  elif [[ -e "$unit_path" ]]; then
+    fail "$unit_path is not a symlink"
+  else
+    mkdir -p -- "$(dirname "$unit_path")"
+    ln -s -- "$unit_source" "$unit_path"
+  fi
+}
+
+q1sh() {
+  stop_unit
+  mkdir -p -- "$cache"
+  : > "$alacritty_overlay"
+  : > "$tmux_overlay"
+  reload_consumers
+  printf '%s\n' "theme: q1sh"
+}
+
+host() {
+  need dconf systemctl
+  ensure_unit
+  sync_ptyxis
+  systemctl --user daemon-reload
+  systemctl --user enable --now "$unit"
+  printf '%s\n' "theme: host"
+}
+
+[[ $# -eq 1 ]] || fail "usage: theme q1sh|host"
+
+case "$1" in
+  q1sh) q1sh ;;
+  host) host ;;
+  sync) sync_ptyxis ;;
+  watch) watch_ptyxis ;;
+  stop) stop_unit ;;
+  *) fail "usage: theme q1sh|host" ;;
+esac

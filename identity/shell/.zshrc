@@ -29,14 +29,11 @@ autoload -Uz compinit && compinit -d "$ZSH_COMPDUMP"
 zstyle ':completion:*' menu select
 
 # --- prompt ---
-autoload -Uz vcs_info
 precmd() {
-  vcs_info
   export GPG_TTY=$(tty)                            # GPG_TTY survives tmux reattach
   print -Pn "\e]0;A T O M X\a"
   _git_rprompt                                     # RPROMPT: branch + status (in .functions)
 }
-zstyle ':vcs_info:git:*' formats '%b'
 
 PROMPT='%B%F{cyan}%1~%f %(?.%F{green}.%F{red})$❱%f%b '
 

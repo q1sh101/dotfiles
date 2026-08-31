@@ -48,3 +48,6 @@ export R2_HISTORY="/dev/null"
 export ZSH_COMPDUMP="/dev/null"                        # no .zcompdump on disk
 export NVIM_LOG_FILE="/dev/null"
 export _ZO_EXCLUDE_DIRS="/dev/shm/*"           # don't record vault dirs
+
+# --- telemetry ---
+export DO_NOT_TRACK=1

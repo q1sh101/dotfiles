@@ -32,6 +32,7 @@ cd ~/dotfiles && ./uninstall.sh
 - custom tmux status bar
 - unified `git-status` - branch + visual states for tmux and zsh prompt
 - single theme source - `theme/colours.conf` -> `./theme/build` -> generates tmux and alacritty configs
+- `theme q1sh|host` - switch Alacritty and tmux between q1sh and host colours
 
 ## dependencies
 
@@ -67,6 +68,7 @@ sudo dnf install tmux fzf ripgrep xclip wl-clipboard rsync ranger curl wget xdg-
 nvim          # https://github.com/neovim/neovim (config: separate repo)
 gh            # https://github.com/cli/cli
 gitleaks      # https://github.com/gitleaks/gitleaks
+# Nerd Font:    https://github.com/ryanoasis/nerd-fonts (DejaVuSansMono.zip)
 ```
 
 ### languages

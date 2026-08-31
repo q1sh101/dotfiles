@@ -4,6 +4,9 @@
 # format: tmux | zsh
 # nerd: 1 (icon) | 0 (ascii)
 
+# avoid optional index refresh during display-only checks
+export GIT_OPTIONAL_LOCKS=0
+
 cd "${1:-.}" 2>/dev/null || exit 0
 branch=$(git branch --show-current 2>/dev/null) || exit 0
 [ -z "$branch" ] && exit 0
@@ -12,7 +15,7 @@ format="${2:-tmux}"
 nerd="${3:-0}"
 
 # --- status indicators (like starship order: = $ ✘ » ! + ? ⇡ ⇣ ⇕) ---
-gs=$(timeout 1s git status --porcelain 2>/dev/null) || exit 0
+gs=$(git status --porcelain 2>/dev/null) || exit 0
 ind=""
 
 if [ -n "$gs" ]; then

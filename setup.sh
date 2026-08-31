@@ -50,6 +50,11 @@ link "$_dotfiles/identity/ssh/config" "$HOME/.ssh/config"
 link "$_dotfiles/identity/tmux/tmux.conf" "$HOME/.tmux.conf"
 link "$_dotfiles/identity/shell/git-status" "$HOME/.local/bin/git-status"
 
+# --- theme ---
+link "$_dotfiles/theme/alacritty" "$HOME/.local/bin/theme"
+mkdir -p "$HOME/.cache/dotfiles"
+touch "$HOME/.cache/dotfiles/alacritty-host.toml" "$HOME/.cache/dotfiles/tmux-host.conf"
+
 # --- apps/alacritty ---
 link "$_dotfiles/apps/alacritty/alacritty.toml" "$HOME/.config/alacritty/alacritty.toml"
 
@@ -65,6 +70,7 @@ chmod 700 "$HOME/.ssh" 2>/dev/null || true
 chmod +x "$_dotfiles/identity/git/hooks/pre-commit"
 chmod +x "$_dotfiles/identity/shell/git-status"
 chmod +x "$_dotfiles/theme/build"
+chmod +x "$_dotfiles/theme/alacritty"
 chmod +x "$_dotfiles/uninstall.sh"
 
 echo ""

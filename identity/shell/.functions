@@ -1,11 +1,15 @@
 # q1sh101 - functions
 
 # --- git prompt (used by precmd in .zshrc, delegates to git-status) ---
+typeset -gi _nerd_font=-1
+
 _git_rprompt() {
-  [[ -z "$TMUX" && -n "$vcs_info_msg_0_" ]] || { RPROMPT=""; return; }
-  local nerd=0
-  command -v fc-list >/dev/null 2>&1 && fc-list : family | grep -qi "nerd" && nerd=1
-  RPROMPT=$("$DOTFILES/identity/shell/git-status" . zsh "$nerd")
+  [[ -z "$TMUX" ]] || { RPROMPT=""; return; }
+  if (( _nerd_font < 0 )); then
+    _nerd_font=0
+    command -v fc-list >/dev/null 2>&1 && fc-list : family | grep -qi "nerd" && _nerd_font=1
+  fi
+  RPROMPT=$("$DOTFILES/identity/shell/git-status" . zsh "$_nerd_font")
 }
 
 # --- mkcd ---
